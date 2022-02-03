@@ -4,9 +4,6 @@ import model.utils as utils
 import torch.optim as optim
 import torch.nn as nn
 import model.test as test
-import datasets.mnist as mnist
-import datasets.mnistm as mnistm
-import datasets.combined_mnist as combined_mnist
 from model.utils import save_model
 from model.utils import visualize
 from model.utils import set_model_mode
@@ -85,8 +82,10 @@ def source_only(encoder, classifier, source_loader_creator, target_loader_creato
     visualize(encoder, 'source', save_name, order=order)
 
 
-def dann(encoder, classifier, discriminator, source_train_loader, target_train_loader, save_name, order=True,
-         logger_info=None):
+def dann(encoder, classifier, discriminator, source_loader_creator, target_loader_creator, save_name, order=True, logger_info=None):
+    source_train_loader, source_test_loader = source_loader_creator['train'], source_loader_creator['test']
+    target_train_loader, target_test_loader = target_loader_creator['train'], target_loader_creator['test']
+
     file_name = logger_info['filename']
     level = logger_info['level']
     logging.basicConfig(filename=file_name, level=level)
@@ -163,7 +162,9 @@ def dann(encoder, classifier, discriminator, source_train_loader, target_train_l
     visualize(encoder, 'source', save_name)
 
 
-def joint_ds_training(encoder, classifier, save_name, logger_info=None):
+def joint_ds_training(encoder, classifier, train_set, test_sets=None, save_name=None, logger_info=None):
+    combined_train_loader, combined_test_loader = train_set
+
     file_name = logger_info['filename']
     level = logger_info['level']
     logging.basicConfig(filename=file_name, level=level)
@@ -212,7 +213,9 @@ def joint_ds_training(encoder, classifier, save_name, logger_info=None):
                 print(msg)
 
         # if (epoch + 1) % 3 == 0:
-        test.tester(encoder, classifier, None, combined_test_loader, source_test_loader, training_mode='source_only', logger_info=logger_info)
-        test.tester(encoder, classifier, None, combined_test_loader, target_test_loader, training_mode='source_only', logger_info=logger_info)
+        test.tester(encoder, classifier, None, combined_test_loader, combined_test_loader, training_mode='source_only', logger_info=logger_info)
+        if test_sets:
+            for test_set in test_sets:
+                test.tester(encoder, classifier, None, combined_test_loader, test_set, training_mode='source_only', logger_info=logger_info)
     save_model(encoder, classifier, None, 'joint', save_name)
     visualize(encoder, 'joint', save_name)
