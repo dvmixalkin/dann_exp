@@ -9,6 +9,7 @@ import model.params as params
 from datasets.mnist import create_mnist
 from datasets.mnistm import create_mnist_m
 from datasets.svhn import create_svhn
+from torchvision import transforms
 
 
 class CombinedMNIST(data.Dataset):
@@ -29,12 +30,12 @@ class CombinedMNIST(data.Dataset):
 
         if self.train:
             if mnist:
-                mnist_data, mnist_labels = mnist.data, mnist.targets
+                mnist_data, mnist_labels = mnist['train'].dataset.train_data, mnist['train'].dataset.train_labels
                 mnist_data = torch.stack([mnist_data, mnist_data, mnist_data], 3)
             else:
                 mnist_data, mnist_labels = None, None
             if mnistm:
-                mnistm_data, mnistm_labels = mnistm.train_data, mnistm.train_labels
+                mnistm_data, mnistm_labels = mnistm['train'].dataset.train_data, mnistm['train'].dataset.train_labels
             else:
                 mnistm_data, mnistm_labels = None, None
 
@@ -45,18 +46,18 @@ class CombinedMNIST(data.Dataset):
             else:
                 svhn_data, svhn_labels = None, None
 
-            self.train_data = torch.cat([mnist_data, mnistm_data, svhn_data])
+            self.train_data = torch.cat([ds for ds in [mnist_data, mnistm_data, svhn_data]if ds is not None])
             del svhn_data
-            self.train_labels = torch.cat([mnist_labels, mnistm_labels, svhn_labels])
+            self.train_labels = torch.cat([ds for ds in [mnist_labels, mnistm_labels, svhn_labels] if ds is not None])
             del svhn_labels
         else:
             if mnist:
-                mnist_data, mnist_labels = mnist.data, mnist.targets
+                mnist_data, mnist_labels = mnist['test'].dataset.train_data, mnist['test'].dataset.train_labels
                 mnist_data = torch.stack([mnist_data, mnist_data, mnist_data], 3)
             else:
                 mnist_data, mnist_labels = None, None
             if mnistm:
-                mnistm_data, mnistm_labels = mnistm.test_data, mnistm.test_labels
+                mnistm_data, mnistm_labels = mnistm['test'].dataset.test_data, mnistm['test'].dataset.test_labels
             else:
                 mnistm_data, mnistm_labels = None, None
 
@@ -67,9 +68,9 @@ class CombinedMNIST(data.Dataset):
             else:
                 svhn_data, svhn_labels = None, None
 
-            self.test_data = torch.cat([mnist_data, mnistm_data, svhn_data])
+            self.test_data = torch.cat([ds for ds in [mnist_data, mnistm_data, svhn_data] if ds is not None])
             del svhn_data
-            self.test_labels = torch.cat([mnist_labels, mnistm_labels, svhn_labels])
+            self.test_labels = torch.cat([ds for ds in [mnist_labels, mnistm_labels, svhn_labels] if ds is not None])
             del svhn_labels
 
     @staticmethod
@@ -130,7 +131,8 @@ class CombinedMNIST(data.Dataset):
 
 
 def create_loaders(datasets_list=['mnist', 'mnist_m', 'svhn'], transform_params=['1', '1', '1']):
-    assert len(datasets_list)==len(transform_params), 'set correct sequences for datasets and transform params'
+    assert len(datasets_list) == len(transform_params), 'set correct sequences for datasets and transform params'
+    parameters = transform_params
     if isinstance(transform_params, str):
         parameters = [transform_params, transform_params, transform_params]
 
@@ -140,7 +142,7 @@ def create_loaders(datasets_list=['mnist', 'mnist_m', 'svhn'], transform_params=
     datasets_template = {
         'mnist': mnist, 'mnistm': mnistm, 'svhn': svhn
     }
-    transform = None  # transforms.Compose([transforms.ToTensor()])
+    transform = transforms.Compose([transforms.ToTensor()])
 
     combined_train_dataset = CombinedMNIST(datasets_template, train=True, transform=transform)
     combined_test_dataset = CombinedMNIST(datasets_template, train=False, transform=transform)
@@ -156,4 +158,4 @@ def create_loaders(datasets_list=['mnist', 'mnist_m', 'svhn'], transform_params=
         batch_size=params.batch_size,
         num_workers=params.num_workers
     )
-    return combined_train_loader, combined_test_loader
+    return {'train': combined_train_loader, 'test': combined_test_loader}
