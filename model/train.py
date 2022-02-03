@@ -79,7 +79,7 @@ def source_only(encoder, classifier, source_loader_creator, target_loader_creato
         test.tester(encoder, classifier, None, source_t_loader, target_t_loader, training_mode='source_only',
                     logger_info=logger_info)
     save_model(encoder, classifier, None, 'source', save_name)
-``    visualize(encoder, source_test_loader, target_test_loader, 'source', save_name, order=order)
+    visualize(encoder, source_test_loader, target_test_loader, 'source', save_name, order=order)
 
 
 def dann(encoder, classifier, discriminator, source_loader_creator, target_loader_creator, save_name, order=True, logger_info=None):
