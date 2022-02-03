@@ -1,14 +1,15 @@
+import datetime
+import json
+import logging
+import os
 import torch
+import model.model as model
 import model.train as train
+
 from datasets.mnist import create_mnist
 from datasets.mnistm import create_mnist_m
 from datasets.svhn import create_svhn
 from datasets.combined_mnist import create_loaders
-import model.model as model
-import logging
-import os
-import datetime
-import json
 
 save_name = 'omg'
 
@@ -36,7 +37,9 @@ def single_step(source, target, is_sprt=True, size='small', mode_='forward'):
         # train.dann(encoder, classifier, discriminator, source_train_loader, target_train_loader, save_name,
         #            order=order, logger_info=logger_info)
     else:
-        train.joint_ds_training(encoder, classifier, save_name, logger_info=logger_info)
+        # train_set, test_sets =
+        train.joint_ds_training(encoder, classifier, train_set=source, test_sets=target, save_name=save_name,
+                                logger_info=logger_info)
 
 
 def grid_report():
@@ -69,19 +72,49 @@ def grid_report():
         print("There is no GPU -_-!")
 
 
+def get_grid_json(transform_hyperparameters_version=['1', '1', '1']):
+    mnist_creator = create_mnist(transform_hyperparameters_version[0])
+    mnistm_creator = create_mnist_m(transform_hyperparameters_version[1])
+    svhn_creator = create_svhn(transform_hyperparameters_version[2])
+
+    return {
+        'source_dann': {
+            'mnist': {
+                'mnistm': [mnist_creator, mnistm_creator],
+                'svhn': [mnist_creator, svhn_creator]
+            },
+            'mnistm': {
+                'mnist': [mnistm_creator, mnist_creator],
+                'svhn': [mnistm_creator, svhn_creator]
+            },
+            'svhn': {
+                'mnist': [svhn_creator, mnist_creator],
+                'mnistm': [svhn_creator, mnistm_creator]
+            }
+        },
+        'joint': {
+            'mnist+mnistm': ['mnist', 'mnist_m'],
+            'mnist+svhn': ['mnist', 'svhn'],
+            'mnistn+svhn': ['mnist_m', 'svhn'],
+            'mnist+mnistm+svhn': ['mnist', 'mnist_m', 'svhn']
+        }
+    }
+
+
 if __name__ == "__main__":
     mnist_loader_creator = create_mnist(transform_hyperparameters_version='1')
     mnistm_loader_creator = create_mnist_m(transform_hyperparameters_version='1')
-    # svhn_loader_creator = create_svhn(transform_hyperparameters_version='1')
+    svhn_loader_creator = create_svhn(transform_hyperparameters_version='1')
     #
-    # used_datasets = ['mnist', 'mnist_m', 'svhn']
-    # used_transform_params = ['1', '1', '1']
-    # combined_loader_creator = create_loaders(datasets_list=used_datasets, transform_params=used_transform_params)
-    is_separate = True
+    used_datasets = ['mnist', 'mnist_m', 'svhn']
+    used_transform_params = ['1', '1', '1']
+    combined_loader_creator = create_loaders(datasets_list=used_datasets, transform_params=used_transform_params)
+
+    is_separate = False
     arch_size = 'small'
     mode = 'forward'
     single_step(
-        source=mnist_loader_creator,
+        source=combined_loader_creator,
         target=mnistm_loader_creator,
         is_sprt=is_separate,
         size=arch_size, mode_=mode
