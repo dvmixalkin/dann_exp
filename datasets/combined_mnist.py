@@ -4,13 +4,13 @@ import numpy as np
 import torch.utils.data as data
 from PIL import Image
 import torch
-import torchvision.datasets as datasets
-from torchvision import transforms
-from torch.utils.data import SubsetRandomSampler, DataLoader
+from torch.utils.data import DataLoader
 import model.params as params
+from datasets.mnist import create_mnist
+from datasets.mnistm import create_mnist_m
+from datasets.svhn import create_svhn
 
 
-# MNIST-M
 class CombinedMNIST(data.Dataset):
     raw_folder = 'raw'
     processed_folder = 'processed'
@@ -129,155 +129,8 @@ class CombinedMNIST(data.Dataset):
             return len(self.test_data)
 
 
-# mnist_transform = transforms.Compose([transforms.ToTensor(),
-#                                       transforms.Normalize((0.5,),
-#                                                            (0.5,))
-#                                       # transforms.Normalize((0.13092535192648502,),
-#                                       #                      (0.3084485240270358,))
-#                                       # transforms.Normalize((0.,),
-#                                       #                      (1.,))
-#                                       ])
-# mnist_train_dataset = datasets.MNIST(root='data/pytorch/MNIST',
-#                                      train=True,
-#                                      download=True,
-#                                      transform=mnist_transform)
-# mnist_test_dataset = datasets.MNIST(root='data/pytorch/MNIST',
-#                                     train=False,
-#                                     download=True,
-#                                     transform=mnist_transform)
-# mnist = {'train': mnist_train_dataset, 'test': mnist_test_dataset}
-#
-# # MNIST_M
-# from datasets.mnistm import MNISTM
-#
-# mnistm_transform = transforms.Compose([transforms.ToTensor(),
-#                                        transforms.Normalize((0.29730626, 0.29918741, 0.27534935),
-#                                                             (0.32780124, 0.32292358, 0.32056796))])
-#
-# mnistm_train_dataset = MNISTM(root='data/pytorch/MNIST-M',
-#                               train=True,
-#                               download=True,
-#                               transform=mnistm_transform)
-# mnistm_test_dataset = MNISTM(root='data/pytorch/MNIST-M',
-#                              train=False,
-#                              download=True,
-#                              transform=mnistm_transform)
-# mnistm = {'train': mnistm_train_dataset, 'test': mnistm_test_dataset}
-#
-# # SVHN
-# patch_size = 28
-# transform = transforms.Compose([
-#     # transforms.ToPILImage(),
-#     transforms.Resize(28),
-#     transforms.ToTensor(),
-#     transforms.Normalize((0.5, 0.5, 0.5),
-#                          (0.5, 0.5, 0.5)),
-#     # transforms.Normalize((0.29730626, 0.29918741, 0.27534935),
-#     #                      (0.32780124, 0.32292358, 0.32056796)),
-#     # transforms.Normalize((0., 0., 0.),
-#     #                      (1., 1., 1.)),
-# ])
-#
-# # root = Root directory of dataset where directory``SVHN`` exists.
-# root = 'data/pytorch/SVHN'
-# svhn_train_dataset = datasets.SVHN(root=root, split="train", transform=transform, download=True)
-# svhn_test__dataset = datasets.SVHN(root=root, split="test", transform=transform, download=True)
-# svhn = {'train': svhn_train_dataset, 'test': svhn_test__dataset}
-#
-# # COMBINED DATASET
-# transform = transforms.Compose([transforms.ToTensor()])
-# combined_train_dataset = CombinedMNIST(mnist['train'], mnistm['train'], svhn['train'], train=True, transform=transform)
-# combined_valid_dataset = CombinedMNIST(mnist['train'], mnistm['train'], svhn['train'], train=True, transform=transform)
-# combined_test_dataset = CombinedMNIST(mnist['test'], mnistm['test'], svhn['test'], train=False, transform=transform)
-#
-# indices = list(range(len(combined_train_dataset)))
-# validation_size = 10000
-# train_idx, valid_idx = indices[validation_size:], indices[:validation_size]
-# train_sampler = SubsetRandomSampler(train_idx)
-# valid_sampler = SubsetRandomSampler(valid_idx)
-#
-# combined_train_loader = DataLoader(
-#     combined_train_dataset,
-#     batch_size=params.batch_size,
-#     sampler=train_sampler,
-#     num_workers=params.num_workers
-# )
-#
-# combined_valid_loader = DataLoader(
-#     combined_valid_dataset,
-#     batch_size=params.batch_size,
-#     sampler=valid_sampler,
-#     num_workers=params.num_workers
-# )
-#
-# combined_test_loader = DataLoader(
-#     combined_test_dataset,
-#     batch_size=params.batch_size,
-#     num_workers=params.num_workers
-# )
-
-
-def create_mnist(root='data/pytorch/MNIST', transform_hyperparameters_version='1'):
-    assert transform_hyperparameters_version in ['1', '2', '3'], 'select correct version from [`1`, `2`, `3`]'
-    if transform_hyperparameters_version == '1':
-        mean = (0.5,)
-        std = (0.5,)
-    elif transform_hyperparameters_version == '2':
-        mean = (0.13092535192648502,)
-        std = (0.3084485240270358,)
-    else:
-        mean = (0.,)
-        std = (1.,)
-    mnist_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, std)])
-    mnist_train_dataset = datasets.MNIST(root=root, train=True, download=True, transform=mnist_transform)
-    mnist_test_dataset = datasets.MNIST(root=root, train=False, download=True, transform=mnist_transform)
-    return {'train': mnist_train_dataset, 'test': mnist_test_dataset}
-
-
-def create_mnist_m(root='data/pytorch/MNIST-M', transform_hyperparameters_version='1'):
-    from datasets.mnistm import MNISTM
-    assert transform_hyperparameters_version in ['1', '2', '3'], 'select correct version from [`1`, `2`, `3`]'
-    if transform_hyperparameters_version == '1':
-        mean = (0.5, 0.5, 0.5)
-        std = (0.5, 0.5, 0.5)
-    elif transform_hyperparameters_version == '2':
-        mean = (0.29730626, 0.29918741, 0.27534935)
-        std = (0.32780124, 0.32292358, 0.32056796)
-    else:
-        mean = (0., 0., 0.)
-        std = (1., 1., 1.)
-    mnistm_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, std)])
-
-    mnistm_train_dataset = MNISTM(root=root, train=True, download=True, transform=mnistm_transform)
-    mnistm_test_dataset = MNISTM(root=root, train=False, download=True, transform=mnistm_transform)
-    return {'train': mnistm_train_dataset, 'test': mnistm_test_dataset}
-
-
-def create_svhn(root='data/pytorch/SVHN', patch_size = 28, transform_hyperparameters_version='1'):
-
-    assert transform_hyperparameters_version in ['1', '2', '3'], 'select correct version from [`1`, `2`, `3`]'
-    if transform_hyperparameters_version == '1':
-        mean = (0.5, 0.5, 0.5)
-        std = (0.5, 0.5, 0.5)
-    elif transform_hyperparameters_version == '2':
-        mean = (0.29730626, 0.29918741, 0.27534935)
-        std = (0.32780124, 0.32292358, 0.32056796)
-    else:
-        mean = (0., 0., 0.)
-        std = (1., 1., 1.)
-
-    transform = transforms.Compose([
-        transforms.Resize(patch_size),
-        transforms.ToTensor(),
-        transforms.Normalize(mean, std),
-    ])
-
-    svhn_train_dataset = datasets.SVHN(root=root, split="train", transform=transform, download=True)
-    svhn_test__dataset = datasets.SVHN(root=root, split="test", transform=transform, download=True)
-    return {'train': svhn_train_dataset, 'test': svhn_test__dataset}
-
-
 def create_loaders(datasets_list=['mnist', 'mnist_m', 'svhn'], transform_params=['1', '1', '1']):
+    assert len(datasets_list)==len(transform_params), 'set correct sequences for datasets and transform params'
     if isinstance(transform_params, str):
         parameters = [transform_params, transform_params, transform_params]
 
@@ -304,9 +157,3 @@ def create_loaders(datasets_list=['mnist', 'mnist_m', 'svhn'], transform_params=
         num_workers=params.num_workers
     )
     return combined_train_loader, combined_test_loader
-
-
-# combined_train_loader, combined_test_loader = create_loaders(
-#     datasets_list=['mnist', 'mnist_m', 'svhn'],
-#     transform_params=['1', '1', '1']
-# )
