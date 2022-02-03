@@ -148,4 +148,6 @@ def weights_loader(arch, block, path):
                 weights = torch.load(path[block])
                 arch.load_state_dict(weights)
                 print(f'{block} Weights loaded')
+            else:
+                print('weights not found..')
     return arch

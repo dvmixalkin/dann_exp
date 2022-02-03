@@ -2,20 +2,15 @@ import datetime
 import json
 import logging
 import os
-
 import torch
-
-import model.model as model
-import model.train as train
+from model import model
+from model import train
 from datasets.combined_mnist import create_loaders
 from datasets.mnist import create_mnist
 from datasets.mnistm import create_mnist_m
 from datasets.svhn import create_svhn
 from model import params
 from model.model import weights_loader
-
-
-# save_name = 'omg'
 
 
 def single_step(source, target, paths, save_name, is_sprt=True, size='small', mode_='forward'):
@@ -47,11 +42,11 @@ def single_step(source, target, paths, save_name, is_sprt=True, size='small', mo
         train.dann(encoder, classifier, discriminator, source, target, save_name,
                    order=order, logger_info=logger_info)
     else:
-        # train_set, test_sets =
         train.joint_ds_training(encoder, classifier, train_set=source, test_sets=target, save_name=save_name,
                                 logger_info=logger_info)
 
 
+# @TODO WIP
 def grid_report():
     path = './logs/gris.json'
     if os.path.exists(path):
@@ -82,6 +77,7 @@ def grid_report():
         print("There is no GPU -_-!")
 
 
+# @TODO WIP
 def get_grid_json(transform_hyperparameters_version=['1', '1', '1']):
     mnist_creator = create_mnist(transform_hyperparameters_version[0])
     mnistm_creator = create_mnist_m(transform_hyperparameters_version[1])
