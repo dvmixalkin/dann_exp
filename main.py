@@ -2,16 +2,19 @@ import datetime
 import json
 import logging
 import os
+
 import torch
+
 import model.model as model
 import model.train as train
-from model.model import weights_loader
-
+from datasets.combined_mnist import create_loaders
 from datasets.mnist import create_mnist
 from datasets.mnistm import create_mnist_m
 from datasets.svhn import create_svhn
-from datasets.combined_mnist import create_loaders
 from model import params
+from model.model import weights_loader
+
+
 # save_name = 'omg'
 
 
@@ -109,74 +112,83 @@ def get_grid_json(transform_hyperparameters_version=['1', '1', '1']):
 
 
 if __name__ == "__main__":
-    #  1) для прогона сначала на сорсе , а потом на доменной адаптации нужно раскомментировать необходимые датасеты
-    mnist_loader_creator = create_mnist(transform_hyperparameters_version='2')
-    mnistm_loader_creator = create_mnist_m(transform_hyperparameters_version='2')
-    svhn_loader_creator = create_svhn(transform_hyperparameters_version='2')
-
-    # 2) в словаре необходимо указать, какие датасеты будем смешивать
-    used_datasets = {
-        # 'mnist': '1',
-        'mnist_m': '1',
-        'svhn': '1'
-    }
-    # 3) инициализация смешанного датасета
-    combined_loader_creator = create_loaders(datasets_list=used_datasets)
-
-    # 4) флаг для указания типа обучения:
+    # 1) флаг для указания типа обучения:
     # True - прямой прогон на сорсе + доменная адаптация на таргете
     # False - обучение без доменной адаптации на смешанном датасете
     # NOTE! : если обучение на смешанном датасете, настоятельно рекомендуется закомменировать строки с инициализацией
-    # датасетов в п. 1 чтобы не упасть по размеру оперативнйо памяти(все 3 датасета "съедают" примерно 15,6 Гб ОЗУ)
+    # датасетов в п.2 чтобы не упасть по размеру оперативнйо памяти(все 3 датасета "съедают" примерно 15,6 Гб ОЗУ)
     is_separate = True
 
-    # 5) выбор архитектуры:
+    # 2) выбор архитектуры:
     # "small" - маленькая(1-я в статье) сетка
     # "middle" - большая(2-я в статье), но с большой головой
     # "large" - средняя(3-я в статье), с 3 свертками, но маленькой головой
     # "mixed" - кастомная сетка: экстрактор от 3-ей сетки, голова от 2ой сетки
-    arch_size = 'mixed'
+    arch_size = 'small'
 
-    # 6) опциональный флаг('forward'): введен для удобства, чтобы каждый раз не править сорс и таргет датасеты
+    # 3) опциональный флаг('forward'): введен для удобства, чтобы каждый раз не править сорс и таргет датасеты
     # если сорс это MNIST, а таргет это MNIST-M, при указании:
     # `mode = 'forward'` обучение будет проходить на сорсе(MNIST) + доменная адаптация на таргете(MNIST-M).
     # `mode = '{any_string}'` обучение будет проходить на таргете(MNIST-M) + доменная адаптация на сорсе(MNIST).
     mode = 'forward'
 
-    # 7) функция запуска обучения.
+    data_warehouse = {
+        'mnist': create_mnist(transform_hyperparameters_version='2'),
+        'mnist_m': create_mnist_m(transform_hyperparameters_version='2'),
+        'svhn': create_svhn(transform_hyperparameters_version='2')
+    }
+    ds_names = ''
+    if is_separate:
+        #  2) для прогона сначала на сорсе , а потом на доменной адаптации нужно раскомментировать необходимые датасеты
+        source_dataset = 'mnist'
+        # source_dataset = 'mnist_m'
+        # source_dataset = 'svhn'
+
+        # target_dataset = 'mnist'
+        target_dataset = 'mnist_m'
+        # target_dataset = 'svhn'
+
+        source = data_warehouse[source_dataset]
+        target = data_warehouse[target_dataset]
+
+        ds_names = f'{source_dataset}2{target_dataset}'
+        print(f'Training on {ds_names}')
+    else:
+        # 3) в словаре необходимо указать, какие датасеты будем смешивать
+        used_datasets = {
+            # 'mnist': '1',
+            'mnist_m': '1',
+            'svhn': '1'
+        }
+        source_name = '-'.join(list(used_datasets.keys()))
+        # 4) инициализация смешанного датасета
+        source = create_loaders(datasets_list=used_datasets)
+        #  раскомментировать строки, которые необходимы для тестирования
+        target = [
+            data_warehouse['mnist'],
+            # data_warehouse['mnist_m'],
+            # data_warehouse['svhn']
+        ]
+        ds_names = ''
+
+    weights = {
+        'encoder': f'./trained_models/encoder_source_{arch_size}_{ds_names}_{params.epochs}.pt',
+        'classifier': f'./trained_models/classifier_source_{arch_size}_{ds_names}_{params.epochs}.pt',
+        'discriminator': None
+    }
+
+    # 4) функция запуска обучения.
     # source - запрашивает сорс датасет
     # target - запрашивает
     #       1) таргет датасет для случая is_separate = True(случай с доменной адаптацией)
     #       2) список с датасетами, на которых будет происходить тестирование при is_separate = False
     #          (случай для обучения на смешанном датасете)
     #
-    if is_separate:
-        # source = mnist_loader_creator
-        # source = mnistm_loader_creator
-        source = svhn_loader_creator
-
-        # target = mnist_loader_creator
-        target = mnistm_loader_creator
-        # target = svhn_loader_creator
-    else:
-        source = combined_loader_creator
-        target = [
-            mnist_loader_creator,
-            mnistm_loader_creator,
-            svhn_loader_creator
-        ]
-
-    weights = {
-        'encoder': f'./trained_models/encoder_source_SVHN{params.epochs}.pt',
-        'classifier': f'./trained_models/classifier_source_SVHN{params.epochs}.pt',
-        'discriminator': None
-    }
-
     single_step(
         source=source,
         target=target,
         paths=weights,
-        save_name=f'SVHN{params.epochs}',
+        save_name=f'{arch_size}_{ds_names}_{params.epochs}',
         is_sprt=is_separate,
         size=arch_size, mode_=mode
     )
@@ -185,4 +197,4 @@ if __name__ == "__main__":
     # функция предполагает прохождение по всем указанным параметрам(wip)
     # grid_report(**args)
     # @TODO сохранение весов обученных моделей с нормальными названиями
-    # @TODO логгирование
+    # @TODO поправить логгирование
