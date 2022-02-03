@@ -1,3 +1,5 @@
+import os
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -137,3 +139,10 @@ class Discriminator(nn.Module):
         else:
             x = self.discriminator_big(reversed_input)
         return F.softmax(x)
+
+
+def weights_loader(arch, block, path):
+    if block in path and os.path.exists(path[block]):
+        weights = torch.load(path[block])
+        arch.load_state_dict(weights)
+    return arch
