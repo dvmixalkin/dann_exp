@@ -138,9 +138,9 @@ if __name__ == "__main__":
 
     if is_separate:
         # для прогона сначала на сорсе , а потом на доменной адаптации нужно раскомментировать необходимые датасеты
-        source_dataset = 'mnist'
+        # source_dataset = 'mnist'
         # source_dataset = 'mnist_m'
-        # source_dataset = 'svhn'
+        source_dataset = 'svhn'
 
         # target_dataset = 'mnist'
         target_dataset = 'mnist_m'
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     else:
         # в словаре необходимо указать, какие датасеты будем смешивать
         used_datasets = {
-            # 'mnist': '1',
+            'mnist': '1',
             'mnist_m': '1',
             'svhn': '1'
         }
@@ -164,8 +164,8 @@ if __name__ == "__main__":
         #  раскомментировать строки, которые необходимы для тестирования
         target = [
             data_warehouse['mnist'],
-            # data_warehouse['mnist_m'],
-            # data_warehouse['svhn']
+            data_warehouse['mnist_m'],
+            data_warehouse['svhn']
         ]
         ds_names = ''
 
