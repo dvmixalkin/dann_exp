@@ -97,14 +97,14 @@ def plot_embedding(X, y, d, training_mode, save_name):
     print('{} is saved'.format(fig_name))
 
 
-def visualize(encoder, training_mode, save_name, order=True):
+def visualize(encoder, source_loader, target_loader, training_mode, save_name, order=True):
     # Draw 512 samples in test_data
     if order:
-        source_test_loader = mnist.mnist_test_loader
-        target_test_loader = mnistm.mnistm_test_loader
+        source_test_loader = source_loader
+        target_test_loader = target_loader
     else:
-        source_test_loader = mnistm.mnistm_test_loader
-        target_test_loader = mnist.mnist_test_loader
+        source_test_loader = target_loader
+        target_test_loader = source_loader
 
     # Get source_test samples
     source_label_list = []
@@ -160,9 +160,9 @@ def visualize(encoder, training_mode, save_name, order=True):
     plot_embedding(dann_tsne, combined_label_list, combined_domain_list, training_mode, save_name)
 
 
-def visualize_input():
-    source_test_loader = mnist.mnist_test_loader
-    target_test_loader = mnistm.mnistm_test_loader
+def visualize_input(source_test_loader, target_test_loader):
+    # source_test_loader = mnist.mnist_test_loader
+    # target_test_loader = mnistm.mnistm_test_loader
 
     # Get source_test samples
     source_label_list = []
