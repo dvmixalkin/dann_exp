@@ -160,8 +160,9 @@ def dann(encoder, classifier, discriminator, source_loader_creator, target_loade
                 print(msg)
         # if (epoch + 1) % 10 == 0:
         test.tester(encoder, classifier, discriminator, source_test_loader, target_test_loader, training_mode='dann', logger_info=logger_info)
-
-    save_model(encoder, classifier, discriminator, 'source', save_name)
+        if (epoch + 1) % 10 == 0:
+            save_model(encoder, classifier, discriminator, 'source', f'{save_name}_DA')
+    # save_model(encoder, classifier, discriminator, 'source', save_name)
     visualize(encoder, source_test_loader, target_test_loader, 'source', save_name)
 
 
