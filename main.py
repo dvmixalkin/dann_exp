@@ -5,16 +5,17 @@ import os
 import torch
 import model.model as model
 import model.train as train
+from model.model import weights_loader
 
 from datasets.mnist import create_mnist
 from datasets.mnistm import create_mnist_m
 from datasets.svhn import create_svhn
 from datasets.combined_mnist import create_loaders
+from model import params
+# save_name = 'omg'
 
-save_name = 'omg'
 
-
-def single_step(source, target, is_sprt=True, size='small', mode_='forward'):
+def single_step(source, target, paths, save_name, is_sprt=True, size='small', mode_='forward'):
     if not os.path.exists('./logs'):
         os.mkdir('./logs')
     separate_or_joint = 'separate' if is_sprt else 'joint'
@@ -25,8 +26,14 @@ def single_step(source, target, is_sprt=True, size='small', mode_='forward'):
         order = True if mode_ == 'forward' else False
 
     encoder = model.Extractor(size=size).cuda()
+    encoder = weights_loader(encoder, 'encoder', paths)
+
     classifier = model.Classifier(size=size).cuda()
+    classifier = weights_loader(classifier, 'classifier', paths)
+
     discriminator = model.Discriminator(size=size).cuda()
+    discriminator = weights_loader(discriminator, 'discriminator', paths)
+
     if is_sprt:
         train.source_only(encoder, classifier,
                           source_loader_creator=source,
@@ -159,9 +166,17 @@ if __name__ == "__main__":
             svhn_loader_creator
         ]
 
+    weights = {
+        'encoder': None,
+        'classifier': None,
+        'discriminator': None
+    }
+
     single_step(
         source=source,
         target=target,
+        paths=weights,
+        save_name=f'SVHN{params.epochs}',
         is_sprt=is_separate,
         size=arch_size, mode_=mode
     )
