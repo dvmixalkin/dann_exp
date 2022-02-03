@@ -111,11 +111,11 @@ if __name__ == "__main__":
     combined_loader_creator = create_loaders(datasets_list=used_datasets, transform_params=used_transform_params)
 
     is_separate = False
-    arch_size = 'small'
+    arch_size = 'mixed'
     mode = 'forward'
     single_step(
         source=combined_loader_creator,
-        target=mnistm_loader_creator,
+        target=None,
         is_sprt=is_separate,
         size=arch_size, mode_=mode
     )
