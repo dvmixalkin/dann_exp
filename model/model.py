@@ -143,7 +143,7 @@ class Discriminator(nn.Module):
 
 def weights_loader(arch, block, path):
     if block in path:
-        if path[block]:
+        if path[block] is not None and path[block] != '':
             if os.path.exists(path[block]):
                 weights = torch.load(path[block])
                 arch.load_state_dict(weights)
