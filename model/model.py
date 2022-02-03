@@ -10,9 +10,12 @@ of_shape = 2352
 class Extractor(nn.Module):
     def __init__(self, size='small'):
         super(Extractor, self).__init__()
-        assert size in ['small', 'middle', 'large', 'mixed'], "arch could be only in ['small', 'middle', 'large', 'mixed']"
+        assert size in ['small', 'middle', 'large', 'mixed'], \
+            "arch could be only in ['small', 'middle', 'large', 'mixed']"
+
         self.size = size
         print(f'{self.size} net'.upper())
+
         self.extractor = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=32, kernel_size=5, padding=2),
             nn.ReLU(),
