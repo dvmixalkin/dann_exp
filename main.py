@@ -1,13 +1,13 @@
 import torch
-import train
-import mnist
-import mnistm
-import model
+import model.train as train
+import datasets.mnist as mnist
+import datasets.mnistm as mnistm
+import model.model as model
 import logging
 import os
 import datetime
 import json
-from utils import get_free_gpu
+from model.utils import get_free_gpu
 
 save_name = 'omg'
 
@@ -50,7 +50,7 @@ def grid_report():
             s = 'separate' if is_separate_ else 'joint'
             if s not in stats:
                 stats[s] = {}
-            for arch_size_ in ['small', 'middle', 'large']:
+            for arch_size_ in ['small', 'middle', 'large', 'mixed']:
                 if arch_size_ not in stats[s]:
                     stats[s][arch_size_] = {}
                 for mode_ in ['forward', 'reversed']:
@@ -68,8 +68,8 @@ def grid_report():
 
 
 if __name__ == "__main__":
-    is_separate = False
-    arch_size = 'middle'
+    is_separate = True
+    arch_size = 'small'
     mode = 'forward'
     single_step(is_sprt=is_separate, size=arch_size, mode_=mode)
 
