@@ -4,3 +4,4 @@ torchvision
 matplotlib
 sklearn
 Pillow
+opencv-python
