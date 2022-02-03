@@ -113,14 +113,14 @@ if __name__ == "__main__":
     # False - обучение без доменной адаптации на смешанном датасете
     # NOTE! : если обучение на смешанном датасете, настоятельно рекомендуется закомменировать строки с инициализацией
     # датасетов в п.2 чтобы не упасть по размеру оперативнйо памяти(все 3 датасета "съедают" примерно 15,6 Гб ОЗУ)
-    is_separate = True
+    is_separate = False
 
     # 2) выбор архитектуры:
     # "small" - маленькая(1-я в статье) сетка
     # "middle" - большая(2-я в статье), но с большой головой
     # "large" - средняя(3-я в статье), с 3 свертками, но маленькой головой
     # "mixed" - кастомная сетка: экстрактор от 3-ей сетки, голова от 2ой сетки
-    arch_size = 'small'
+    arch_size = 'mixed'
 
     # 3) опциональный флаг('forward'): введен для удобства, чтобы каждый раз не править сорс и таргет датасеты
     # если сорс это MNIST, а таргет это MNIST-M, при указании:
@@ -169,9 +169,12 @@ if __name__ == "__main__":
         ]
         ds_names = ''
 
+    ds_names = ''
+
+    filename = 'SVHN25'  # f'{arch_size}_{ds_names}_{params.epochs}.pt'
     weights = {
-        'encoder': f'./trained_models/encoder_source_{arch_size}_{ds_names}_{params.epochs}.pt',
-        'classifier': f'./trained_models/classifier_source_{arch_size}_{ds_names}_{params.epochs}.pt',
+        'encoder': f'./trained_models/encoder_source_{filename}.pt',
+        'classifier': f'./trained_models/classifier_source_{filename}.pt',
         'discriminator': None
     }
 
