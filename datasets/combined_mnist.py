@@ -42,7 +42,7 @@ class CombinedMNIST(data.Dataset):
             if svhn:
                 # svhn_data = torch.as_tensor(svhn.data).permute(0, 2, 3, 1)[:, 2:30, 2:30, :]
                 svhn_data = self.resize_svhn(dataloader=svhn, split='train', size=(28, 28))
-                svhn_labels = torch.from_numpy(svhn.labels)
+                svhn_labels = torch.from_numpy(svhn['train'].dataset.labels)
             else:
                 svhn_data, svhn_labels = None, None
 
@@ -64,7 +64,7 @@ class CombinedMNIST(data.Dataset):
             if svhn:
                 # svhn_data = torch.as_tensor(svhn.data).permute(0, 2, 3, 1)[:, 2:30, 2:30, :]
                 svhn_data = self.resize_svhn(dataloader=svhn, split='test', size=(28, 28))
-                svhn_labels = torch.as_tensor(svhn.labels)
+                svhn_labels = torch.as_tensor(svhn['test'].dataset.labels)
             else:
                 svhn_data, svhn_labels = None, None
 
@@ -130,15 +130,22 @@ class CombinedMNIST(data.Dataset):
             return len(self.test_data)
 
 
-def create_loaders(datasets_list=['mnist', 'mnist_m', 'svhn'], transform_params=['1', '1', '1']):
-    assert len(datasets_list) == len(transform_params), 'set correct sequences for datasets and transform params'
-    parameters = transform_params
-    if isinstance(transform_params, str):
-        parameters = [transform_params, transform_params, transform_params]
+def create_loaders(datasets_list):  # , transform_params
+    # assert len(datasets_list) == len(transform_params), 'set correct sequences for datasets and transform params'
+    # parameters = transform_params
+    # if isinstance(transform_params, str):
+    #     parameters = [transform_params, transform_params, transform_params]
+    mnist = None
+    mnistm = None
+    svhn = None
 
-    mnist = create_mnist(transform_hyperparameters_version=parameters[0]) if 'mnist' in datasets_list else None
-    mnistm = create_mnist_m(transform_hyperparameters_version=parameters[1]) if 'mnist_m' in datasets_list else None
-    svhn = create_svhn(transform_hyperparameters_version=parameters[2]) if 'svhn' in datasets_list else None
+    if 'mnist' in datasets_list:
+        mnist = create_mnist(transform_hyperparameters_version=datasets_list['mnist'])
+    if 'mnistm' in datasets_list:
+        mnistm = create_mnist_m(transform_hyperparameters_version=datasets_list['mnistm'])
+    if 'svhn' in datasets_list:
+        svhn = create_svhn(transform_hyperparameters_version=datasets_list['svhn'])
+
     datasets_template = {
         'mnist': mnist, 'mnistm': mnistm, 'svhn': svhn
     }
