@@ -69,7 +69,7 @@ def grid_report():
 
 if __name__ == "__main__":
     is_separate = True
-    arch_size = 'small'
+    arch_size = 'mixed'
     mode = 'forward'
     single_step(is_sprt=is_separate, size=arch_size, mode_=mode)
 
