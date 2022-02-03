@@ -13,16 +13,11 @@ from model.utils import set_model_mode
 import model.params as params
 import logging
 
-# Source : 0, Target :1
-source_test_loader = mnist.mnist_test_loader
-target_test_loader = mnistm.mnistm_test_loader
 
-combined_train_loader = combined_mnist.combined_train_loader
-combined_valid_loader = combined_mnist.combined_valid_loader
-combined_test_loader = combined_mnist.combined_test_loader
+def source_only(encoder, classifier, source_loader_creator, target_loader_creator, save_name, order=True, logger_info=None):
+    source_train_loader, source_test_loader = source_loader_creator['train'], source_loader_creator['test']
+    target_train_loader, target_test_loader = target_loader_creator['train'], target_loader_creator['test']
 
-
-def source_only(encoder, classifier, source_train_loader, target_train_loader, save_name, order=True, logger_info=None):
     file_name = logger_info['filename']
     level = logger_info['level']
     logging.basicConfig(filename=file_name, level=level)

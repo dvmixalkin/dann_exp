@@ -1,21 +1,19 @@
 import torch
 import model.train as train
-import datasets.mnist as mnist
-import datasets.mnistm as mnistm
+from datasets.mnist import create_mnist
+from datasets.mnistm import create_mnist_m
+from datasets.svhn import create_svhn
+from datasets.combined_mnist import create_loaders
 import model.model as model
 import logging
 import os
 import datetime
 import json
-from model.utils import get_free_gpu
 
 save_name = 'omg'
 
-source_train_loader = mnist.mnist_train_loader
-target_train_loader = mnistm.mnistm_train_loader
 
-
-def single_step(is_sprt=True, size='small', mode_='forward'):
+def single_step(source, target, is_sprt=True, size='small', mode_='forward'):
     if not os.path.exists('./logs'):
         os.mkdir('./logs')
     separate_or_joint = 'separate' if is_sprt else 'joint'
@@ -29,10 +27,14 @@ def single_step(is_sprt=True, size='small', mode_='forward'):
     classifier = model.Classifier(size=size).cuda()
     discriminator = model.Discriminator(size=size).cuda()
     if is_sprt:
-        train.source_only(encoder, classifier, source_train_loader, target_train_loader, save_name,
-                          order=order, logger_info=logger_info)
-        train.dann(encoder, classifier, discriminator, source_train_loader, target_train_loader, save_name,
-                   order=order, logger_info=logger_info)
+        train.source_only(encoder, classifier,
+                          source_loader_creator=source,
+                          target_loader_creator=target,
+                          save_name=save_name,
+                          order=order,
+                          logger_info=logger_info)
+        # train.dann(encoder, classifier, discriminator, source_train_loader, target_train_loader, save_name,
+        #            order=order, logger_info=logger_info)
     else:
         train.joint_ds_training(encoder, classifier, save_name, logger_info=logger_info)
 
@@ -68,9 +70,21 @@ def grid_report():
 
 
 if __name__ == "__main__":
+    mnist_loader_creator = create_mnist(transform_hyperparameters_version='1')
+    mnistm_loader_creator = create_mnist_m(transform_hyperparameters_version='1')
+    # svhn_loader_creator = create_svhn(transform_hyperparameters_version='1')
+    #
+    # used_datasets = ['mnist', 'mnist_m', 'svhn']
+    # used_transform_params = ['1', '1', '1']
+    # combined_loader_creator = create_loaders(datasets_list=used_datasets, transform_params=used_transform_params)
     is_separate = True
-    arch_size = 'mixed'
+    arch_size = 'small'
     mode = 'forward'
-    single_step(is_sprt=is_separate, size=arch_size, mode_=mode)
+    single_step(
+        source=mnist_loader_creator,
+        target=mnistm_loader_creator,
+        is_sprt=is_separate,
+        size=arch_size, mode_=mode
+    )
 
     # grid_report()

@@ -1,15 +1,15 @@
-import torchvision.datasets as datasets
-from torch.utils.data import SubsetRandomSampler, DataLoader
-from torchvision import transforms
-import torch.utils.data as data
-import torch
-import os
 import errno
+import os
+
+import torch
+import torch.utils.data as data
 from PIL import Image
+import torchvision.datasets as datasets
+from torch.utils.data import DataLoader
+from torchvision import transforms
 import model.params as params
 
 
-# MNIST-M
 class MNISTM(data.Dataset):
     """`MNIST-M Dataset."""
 
@@ -20,12 +20,8 @@ class MNISTM(data.Dataset):
     training_file = 'mnist_m_train.pt'
     test_file = 'mnist_m_test.pt'
 
-    def __init__(self,
-                 root, mnist_root="data",
-                 train=True,
-                 transform=None, target_transform=None,
-                 download=False,
-                 convert2gray=False):
+    def __init__(self, root, mnist_root="data", train=True, transform=None, target_transform=None,
+                 download=False, convert2gray=False):
         """Init MNIST-M dataset."""
         super(MNISTM, self).__init__()
         self.root = os.path.expanduser(root)
@@ -66,9 +62,6 @@ class MNISTM(data.Dataset):
         else:
             img, target = self.test_data[index], self.test_labels[index]
 
-        # doing this so that it is consistent with all other datasets
-        # to return a PIL Image
-        # print(type(img))
         img = Image.fromarray(img.squeeze().numpy(), mode='RGB')
 
         if self.convert2gray:
@@ -164,67 +157,32 @@ class MNISTM(data.Dataset):
         print('MNISTM Done!')
 
 
-oneChannel_transforms = transforms.Compose([transforms.ToTensor(),
-                                            # transforms.Normalize((0.5,),
-                                            #                      (0.5,)),
-                                            transforms.Normalize((0.13092535192648502,),
-                                                                 (0.3084485240270358,)),
-                                            # transforms.Normalize((0.,),
-                                            #                      (1.,)),
-                                            ])
-transform = transforms.Compose([transforms.ToTensor(),
-                                transforms.Normalize((0.29730626, 0.29918741, 0.27534935),
-                                                     (0.32780124, 0.32292358, 0.32056796))
-                                ])
+def create_mnist_m(root='data/pytorch/MNIST-M', transform_hyperparameters_version='1'):
+    assert transform_hyperparameters_version in ['1', '2', '3'], 'select correct version from [`1`, `2`, `3`]'
+    if transform_hyperparameters_version == '1':
+        mean = (0.5, 0.5, 0.5)
+        std = (0.5, 0.5, 0.5)
+    elif transform_hyperparameters_version == '2':
+        mean = (0.29730626, 0.29918741, 0.27534935)
+        std = (0.32780124, 0.32292358, 0.32056796)
+    else:
+        mean = (0., 0., 0.)
+        std = (1., 1., 1.)
+    mnistm_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean, std)])
 
-mnistm_train_dataset = MNISTM(root='data/pytorch/MNIST-M', train=True, download=True, transform=transform)
-mnistm_valid_dataset = MNISTM(root='data/pytorch/MNIST-M', train=True, download=True, transform=transform)
-mnistm_test_dataset = MNISTM(root='data/pytorch/MNIST-M', train=False, download=True, transform=transform)
+    mnistm_train_dataset = MNISTM(root=root, train=True, download=True, transform=mnistm_transform)
+    mnistm_test_dataset = MNISTM(root=root, train=False, download=True, transform=mnistm_transform)
 
-indices = list(range(len(mnistm_train_dataset)))
-validation_size = 5000
-train_idx, valid_idx = indices[validation_size:], indices[:validation_size]
-train_sampler = SubsetRandomSampler(train_idx)
-valid_sampler = SubsetRandomSampler(valid_idx)
+    mnistm_train_loader = DataLoader(
+        mnistm_train_dataset,
+        batch_size=params.batch_size,
+        num_workers=params.num_workers
+    )
 
-mnistm_train_loader = DataLoader(
-    mnistm_train_dataset,
-    batch_size=params.batch_size,
-    sampler=train_sampler,
-    num_workers=params.num_workers
-)
+    mnistm_test_loader = DataLoader(
+        mnistm_test_dataset,
+        batch_size=params.batch_size,
+        num_workers=params.num_workers
+    )
 
-mnistm_valid_loader = DataLoader(
-    mnistm_valid_dataset,
-    batch_size=params.batch_size,
-    sampler=train_sampler,
-    num_workers=params.num_workers
-)
-
-mnistm_test_loader = DataLoader(
-    mnistm_test_dataset,
-    batch_size=params.batch_size,
-    num_workers=params.num_workers
-)
-
-# print(mnistm_train_dataset.train_data[5000:].shape)
-# mnistm_concat = (mnistm_train_dataset.train_data[5000:])
-
-
-# def test():
-#     print(mnistm_train_dataset.train_data[5000:].shape)
-#     print((mnistm_train_dataset.train_data[5000:].size()))
-#
-#     print(len(train_sampler), len(mnistm_test_loader), len(valid_sampler))
-#     print(len(mnistm_train_loader), len(mnistm_valid_loader), len(mnistm_test_loader))
-#     for i in range(1):
-#         for batch_idx, (inputs, labels) in enumerate(mnistm_train_loader):
-#             print(i, batch_idx, labels, len(labels))
-#     for batch_idx, (train_data, test_data) in enumerate(zip(mnistm_train_loader, mnistm_valid_loader)):
-#         train_image, train_label = train_data
-#         test_image, test_label = test_data
-#         print(train_label, len(train_label))
-#         print(test_label, len(test_label))
-#         exit()
-
-# test()
+    return {'train': mnistm_train_loader, 'test': mnistm_test_loader}
