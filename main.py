@@ -102,20 +102,24 @@ def get_grid_json(transform_hyperparameters_version=['1', '1', '1']):
 
 
 if __name__ == "__main__":
+    #  для прогона сначала на сорсе , а потом на доменной адаптации нужно раскомментировать необходимые датасеты
     mnist_loader_creator = create_mnist(transform_hyperparameters_version='1')
     mnistm_loader_creator = create_mnist_m(transform_hyperparameters_version='1')
     svhn_loader_creator = create_svhn(transform_hyperparameters_version='1')
 
-    used_datasets = ['mnist', 'mnist_m', 'svhn']
-    used_transform_params = ['1', '1', '1']
-    combined_loader_creator = create_loaders(datasets_list=used_datasets, transform_params=used_transform_params)
+    used_datasets = {
+        'mnist': '1',
+        'mnist_m': '1',
+        'svhn': '1'
+    }
+    combined_loader_creator = create_loaders(datasets_list=used_datasets)
 
-    is_separate = True
+    is_separate = False
     arch_size = 'mixed'
     mode = 'forward'
     single_step(
         source=combined_loader_creator,
-        target=mnistm_loader_creator,
+        target=[mnist_loader_creator, mnistm_loader_creator, svhn_loader_creator],
         is_sprt=is_separate,
         size=arch_size, mode_=mode
     )
