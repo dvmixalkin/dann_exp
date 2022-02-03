@@ -120,7 +120,10 @@ def dann(encoder, classifier, discriminator, source_loader_creator, target_loade
             p = float(batch_idx + start_steps) / total_steps
             alpha = 2. / (1. + np.exp(-10 * p)) - 1
 
-            source_image = torch.cat((source_image, source_image, source_image), 1)
+            if source_image.shape[1] == 1:
+                source_image = torch.cat((source_image, source_image, source_image), 1)
+            if target_image.shape[1] == 1:
+                target_image = torch.cat((target_image, target_image, target_image), 1)
 
             source_image, source_label = source_image.cuda(), source_label.cuda()
             target_image, target_label = target_image.cuda(), target_label.cuda()
