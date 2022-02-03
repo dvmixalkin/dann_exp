@@ -79,7 +79,7 @@ def source_only(encoder, classifier, source_loader_creator, target_loader_creato
         test.tester(encoder, classifier, None, source_t_loader, target_t_loader, training_mode='source_only',
                     logger_info=logger_info)
     save_model(encoder, classifier, None, 'source', save_name)
-    visualize(encoder, 'source', save_name, order=order)
+``    visualize(encoder, source_test_loader, target_test_loader, 'source', save_name, order=order)
 
 
 def dann(encoder, classifier, discriminator, source_loader_creator, target_loader_creator, save_name, order=True, logger_info=None):
@@ -159,7 +159,7 @@ def dann(encoder, classifier, discriminator, source_loader_creator, target_loade
         test.tester(encoder, classifier, discriminator, source_test_loader, target_test_loader, training_mode='dann', logger_info=logger_info)
 
     save_model(encoder, classifier, discriminator, 'source', save_name)
-    visualize(encoder, 'source', save_name)
+    visualize(encoder, source_test_loader, target_test_loader, 'source', save_name)
 
 
 def joint_ds_training(encoder, classifier, train_set, test_sets=None, save_name=None, logger_info=None):
@@ -218,4 +218,4 @@ def joint_ds_training(encoder, classifier, train_set, test_sets=None, save_name=
             for test_set in test_sets:
                 test.tester(encoder, classifier, None, combined_test_loader, test_set['test'], training_mode='source_only', logger_info=logger_info)
     save_model(encoder, classifier, None, 'joint', save_name)
-    visualize(encoder, 'joint', save_name)
+    # visualize(encoder, 'joint', save_name)
