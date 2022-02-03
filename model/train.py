@@ -163,7 +163,7 @@ def dann(encoder, classifier, discriminator, source_loader_creator, target_loade
 
 
 def joint_ds_training(encoder, classifier, train_set, test_sets=None, save_name=None, logger_info=None):
-    combined_train_loader, combined_test_loader = train_set
+    combined_train_loader, combined_test_loader = train_set['train'], train_set['test']
 
     file_name = logger_info['filename']
     level = logger_info['level']
@@ -216,6 +216,6 @@ def joint_ds_training(encoder, classifier, train_set, test_sets=None, save_name=
         test.tester(encoder, classifier, None, combined_test_loader, combined_test_loader, training_mode='source_only', logger_info=logger_info)
         if test_sets:
             for test_set in test_sets:
-                test.tester(encoder, classifier, None, combined_test_loader, test_set, training_mode='source_only', logger_info=logger_info)
+                test.tester(encoder, classifier, None, combined_test_loader, test_set['test'], training_mode='source_only', logger_info=logger_info)
     save_model(encoder, classifier, None, 'joint', save_name)
     visualize(encoder, 'joint', save_name)
