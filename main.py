@@ -103,9 +103,9 @@ def get_grid_json(transform_hyperparameters_version=['1', '1', '1']):
 
 if __name__ == "__main__":
     #  1) для прогона сначала на сорсе , а потом на доменной адаптации нужно раскомментировать необходимые датасеты
-    mnist_loader_creator = create_mnist(transform_hyperparameters_version='1')
-    mnistm_loader_creator = create_mnist_m(transform_hyperparameters_version='1')
-    svhn_loader_creator = create_svhn(transform_hyperparameters_version='1')
+    mnist_loader_creator = create_mnist(transform_hyperparameters_version='2')
+    mnistm_loader_creator = create_mnist_m(transform_hyperparameters_version='2')
+    svhn_loader_creator = create_svhn(transform_hyperparameters_version='2')
 
     # 2) в словаре необходимо указать, какие датасеты будем смешивать
     used_datasets = {
