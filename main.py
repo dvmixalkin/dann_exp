@@ -132,14 +132,16 @@ if __name__ == "__main__":
     # `mode = '{any_string}'` обучение будет проходить на таргете(MNIST-M) + доменная адаптация на сорсе(MNIST).
     mode = 'forward'
 
+    set_norm_hyperparameters = []
     data_warehouse = {
         'mnist': create_mnist(transform_hyperparameters_version='2'),
         'mnist_m': create_mnist_m(transform_hyperparameters_version='2'),
         'svhn': create_svhn(transform_hyperparameters_version='2')
     }
     ds_names = ''
+
     if is_separate:
-        #  2) для прогона сначала на сорсе , а потом на доменной адаптации нужно раскомментировать необходимые датасеты
+        # для прогона сначала на сорсе , а потом на доменной адаптации нужно раскомментировать необходимые датасеты
         source_dataset = 'mnist'
         # source_dataset = 'mnist_m'
         # source_dataset = 'svhn'
@@ -154,14 +156,14 @@ if __name__ == "__main__":
         ds_names = f'{source_dataset}2{target_dataset}'
         print(f'Training on {ds_names}')
     else:
-        # 3) в словаре необходимо указать, какие датасеты будем смешивать
+        # в словаре необходимо указать, какие датасеты будем смешивать
         used_datasets = {
             # 'mnist': '1',
             'mnist_m': '1',
             'svhn': '1'
         }
         source_name = '-'.join(list(used_datasets.keys()))
-        # 4) инициализация смешанного датасета
+        # инициализация смешанного датасета
         source = create_loaders(datasets_list=used_datasets)
         #  раскомментировать строки, которые необходимы для тестирования
         target = [
