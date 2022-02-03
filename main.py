@@ -167,8 +167,8 @@ if __name__ == "__main__":
         ]
 
     weights = {
-        'encoder': None,
-        'classifier': None,
+        'encoder': f'./trained_models/encoder_source_SVHN{params.epochs}.pt',
+        'classifier': f'./trained_models/classifier_source_SVHN{params.epochs}.pt',
         'discriminator': None
     }
 
