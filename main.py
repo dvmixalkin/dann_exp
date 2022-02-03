@@ -121,7 +121,7 @@ if __name__ == "__main__":
     # False - обучение без доменной адаптации на смешанном датасете
     # NOTE! : если обучение на смешанном датасете, настоятельно рекомендуется закомменировать строки с инициализацией
     # датасетов в п. 1 чтобы не упасть по размеру оперативнйо памяти(все 3 датасета "съедают" примерно 15,6 Гб ОЗУ)
-    is_separate = False
+    is_separate = True
 
     # 5) выбор архитектуры:
     # "small" - маленькая(1-я в статье) сетка
@@ -144,12 +144,13 @@ if __name__ == "__main__":
     #          (случай для обучения на смешанном датасете)
     #
     if is_separate:
-        source = mnist_loader_creator
+        # source = mnist_loader_creator
         # source = mnistm_loader_creator
-        # source = svhn_loader_creator
+        source = svhn_loader_creator
+
         # target = mnist_loader_creator
-        target = mnistm_loader_creator
-        # target = svhn_loader_creator
+        # target = mnistm_loader_creator
+        target = svhn_loader_creator
     else:
         source = combined_loader_creator
         target = [
