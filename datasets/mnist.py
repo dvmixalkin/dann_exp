@@ -3,8 +3,11 @@ from torch.utils.data import SubsetRandomSampler, DataLoader
 from torchvision import transforms
 import model.params as params
 
+# import sys
+# sys.path.append()
 
-def create_mnist(root='/home/mikhalkin/PycharmProjects/dann_exp/data/pytorch/MNIST', transform_hyperparameters_version='1'):
+
+def create_mnist(root='../dann_exp/data/pytorch/MNIST', transform_hyperparameters_version='1'):
     assert transform_hyperparameters_version in ['1', '2', '3'], 'select correct version from [`1`, `2`, `3`]'
     if transform_hyperparameters_version == '1':
         mean = (0.5,)

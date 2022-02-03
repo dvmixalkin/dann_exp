@@ -4,7 +4,7 @@ import model.params as params
 from torch.utils.data import DataLoader
 
 
-def create_svhn(root='data/pytorch/SVHN', patch_size=28, transform_hyperparameters_version='1'):
+def create_svhn(root='../dann_exp/data/pytorch/SVHN', patch_size=28, transform_hyperparameters_version='1'):
     assert transform_hyperparameters_version in ['1', '2', '3'], 'select correct version from [`1`, `2`, `3`]'
     if transform_hyperparameters_version == '1':
         mean = (0.5, 0.5, 0.5)

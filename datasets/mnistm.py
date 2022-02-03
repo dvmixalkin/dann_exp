@@ -157,7 +157,7 @@ class MNISTM(data.Dataset):
         print('MNISTM Done!')
 
 
-def create_mnist_m(root='data/pytorch/MNIST-M', transform_hyperparameters_version='1'):
+def create_mnist_m(root='../dann_exp/data/pytorch/MNIST-M', transform_hyperparameters_version='1'):
     assert transform_hyperparameters_version in ['1', '2', '3'], 'select correct version from [`1`, `2`, `3`]'
     if transform_hyperparameters_version == '1':
         mean = (0.5, 0.5, 0.5)
